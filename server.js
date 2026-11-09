@@ -6,16 +6,19 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "db.json");
+const SESSION_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? "" : "local-development-secret-change-before-deploy");
+if (!SESSION_SECRET) throw new Error("Set SESSION_SECRET in the environment before production deployment.");
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(session({
   name: "exam.sid",
-  secret: process.env.SESSION_SECRET || "local-development-secret-change-before-deploy",
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 1000 * 60 * 60 * 4 }
@@ -51,8 +54,12 @@ function cleanExam(exam, includeAnswers = false) {
 }
 function seed() {
   if (fs.existsSync(DATA_FILE)) return;
-  const adminHash = bcrypt.hashSync("Admin@123", 10);
-  const studentHash = bcrypt.hashSync("Student@123", 10);
+  const adminEmail = String(process.env.ADMIN_EMAIL || "admin@example.com").trim().toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123";
+  const studentEmail = String(process.env.DEMO_STUDENT_EMAIL || "student@example.com").trim().toLowerCase();
+  const studentPassword = process.env.DEMO_STUDENT_PASSWORD || "Student@123";
+  const adminHash = bcrypt.hashSync(adminPassword, 10);
+  const studentHash = bcrypt.hashSync(studentPassword, 10);
   const exam = {
     id: "exam_cloud_basics", title: "Cloud Computing Fundamentals",
     description: "A short practice exam on cloud concepts, service models, and deployment.",
@@ -72,8 +79,8 @@ function seed() {
   };
   writeDb({
     users: [
-      { id: "user_admin", name: "System Admin", email: "admin@example.com", passwordHash: adminHash, role: "admin", createdAt: new Date().toISOString() },
-      { id: "user_student", name: "Demo Student", email: "student@example.com", passwordHash: studentHash, role: "student", createdAt: new Date().toISOString() }
+      { id: "user_admin", name: "System Admin", email: adminEmail, passwordHash: adminHash, role: "admin", createdAt: new Date().toISOString() },
+      { id: "user_student", name: "Demo Student", email: studentEmail, passwordHash: studentHash, role: "student", createdAt: new Date().toISOString() }
     ],
     exams: [exam],
     attempts: []
@@ -106,8 +113,9 @@ app.post("/api/auth/register", async (req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
   const password = String(req.body.password || "");
-  const user = readDb().users.find(u => u.email === email);
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) return res.status(401).json({ error: "Email or password is incorrect." });
+  const role = req.body.role === "admin" ? "admin" : "student";
+  const user = readDb().users.find(u => u.email === email && u.role === role);
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) return res.status(401).json({ error: "Email, password or account type is incorrect." });
   req.session.userId = user.id;
   res.json({ user: safeUser(user) });
 });
