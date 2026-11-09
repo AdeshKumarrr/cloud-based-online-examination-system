@@ -47,7 +47,7 @@ function renderLogin(mode="login", role="student") {
   <div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" required autocomplete="username" placeholder="you@example.com"></div>
   <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required minlength="${register?8:1}" autocomplete="${register?"new-password":"current-password"}" placeholder="${register?"At least 8 characters":"Enter your password"}"></div>
   <button class="btn full" type="submit">${register?"Create account":"Sign in"}</button></form>
-  <div class="notice">${register?"Student accounts can attempt exams and view their own results.":role==="admin"?"Demo admin: admin@example.com / Admin@123":"Demo student: student@example.com / Student@1234"}</div>
+  <div class="notice">${register?"Student accounts can attempt exams and view their own results.":role==="admin"?"Demo admin: admin@example.com / Admin@1234":"Demo student: student@example.com / Student@1234"}</div>
   <div class="form-switch">${register?"Already registered?":"New student?"} <button class="text-btn" id="switch-auth">${register?"Sign in":"Create an account"}</button></div></div>`;
   $("#switch-auth").onclick=()=>renderLogin(register?"login":"register", "student");
   if (!register) {
