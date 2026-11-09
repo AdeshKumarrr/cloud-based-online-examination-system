@@ -57,7 +57,7 @@ function seed() {
   const adminEmail = String(process.env.ADMIN_EMAIL || "admin@example.com").trim().toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@123";
   const studentEmail = String(process.env.DEMO_STUDENT_EMAIL || "student@example.com").trim().toLowerCase();
-  const studentPassword = process.env.DEMO_STUDENT_PASSWORD || "Student@123";
+  const studentPassword = process.env.DEMO_STUDENT_PASSWORD || "Student@1234";
   const adminHash = bcrypt.hashSync(adminPassword, 10);
   const studentHash = bcrypt.hashSync(studentPassword, 10);
   const exam = {
