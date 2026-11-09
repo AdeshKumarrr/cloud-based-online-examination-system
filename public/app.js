@@ -38,18 +38,23 @@ async function navigate(page) {
     if (page==="result-detail") return renderResultDetail();
   } catch(e) { app.innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`; }
 }
-function renderLogin(mode="login") {
+function renderLogin(mode="login", role="student") {
   setHeading(mode==="login"?"Welcome back":"Create your account");
   const register=mode==="register";
+  if (register) role="student";
   app.innerHTML=`<div class="card form-card"><div class="intro"><div class="brand-mark">E</div><h2>${register?"Create a student account":"Sign in to ExamDesk"}</h2><p class="muted small">${register?"Register to access available examinations.":"Continue to your examination workspace."}</p></div>
-  <form id="auth-form">${register?`<div class="field"><label for="name">Full name</label><input id="name" name="name" required minlength="2" maxlength="60" placeholder="Enter your name"></div>`:""}
+  ${register?"":`<div class="row" style="gap:8px;margin:0 0 18px"><button class="btn ${role==="student"?"":"secondary"}" type="button" id="student-login">Student Login</button><button class="btn ${role==="admin"?"":"secondary"}" type="button" id="admin-login">Admin Login</button></div>`}<form id="auth-form">${register?`<div class="field"><label for="name">Full name</label><input id="name" name="name" required minlength="2" maxlength="60" placeholder="Enter your name"></div>`:""}
   <div class="field"><label for="email">Email address</label><input id="email" name="email" type="email" required autocomplete="username" placeholder="you@example.com"></div>
   <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" required minlength="${register?8:1}" autocomplete="${register?"new-password":"current-password"}" placeholder="${register?"At least 8 characters":"Enter your password"}"></div>
   <button class="btn full" type="submit">${register?"Create account":"Sign in"}</button></form>
-  <div class="notice">${register?"Student accounts can attempt exams and view their own results.":"Demo student: student@example.com / Student@123"}</div>
+  <div class="notice">${register?"Student accounts can attempt exams and view their own results.":role==="admin"?"Demo admin: admin@example.com / Admin@123":"Demo student: student@example.com / Student@123"}</div>
   <div class="form-switch">${register?"Already registered?":"New student?"} <button class="text-btn" id="switch-auth">${register?"Sign in":"Create an account"}</button></div></div>`;
-  $("#switch-auth").onclick=()=>renderLogin(register?"login":"register");
-  $("#auth-form").onsubmit=async e=>{e.preventDefault();const form=new FormData(e.currentTarget);const body=Object.fromEntries(form.entries());try{const data=await api(register?"/api/auth/register":"/api/auth/login",{method:"POST",body:JSON.stringify(body)});state.user=data.user;toast(register?"Account created.":"Welcome back.");await navigate("home");}catch(err){toast(err.message);}};
+  $("#switch-auth").onclick=()=>renderLogin(register?"login":"register", "student");
+  if (!register) {
+    $("#student-login").onclick=()=>renderLogin("login","student");
+    $("#admin-login").onclick=()=>renderLogin("login","admin");
+  }
+  $("#auth-form").onsubmit=async e=>{e.preventDefault();const form=new FormData(e.currentTarget);const body=Object.fromEntries(form.entries());if(!register)body.role=role;try{const data=await api(register?"/api/auth/register":"/api/auth/login",{method:"POST",body:JSON.stringify(body)});state.user=data.user;toast(register?"Account created.":"Welcome back.");await navigate("home");}catch(err){toast(err.message);}};
 }
 async function refreshData(){const [exams,results]=await Promise.all([api("/api/exams"),api("/api/results")]);state.exams=exams.exams;state.results=results.results;}
 async function renderHome(){
