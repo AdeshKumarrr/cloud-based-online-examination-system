@@ -4,6 +4,7 @@ A learning project for a Cloud Computing internship. ExamDesk is a responsive we
 
 ## Features
 
+- Separate student and admin login choices with server-side role validation
 - Student registration and login with bcrypt password hashing
 - Separate student and admin roles
 - Admin can create MCQ exams and delete exams that have no submitted attempts
@@ -39,7 +40,7 @@ If PowerShell blocks `npm.ps1`, use Command Prompt as the VS Code terminal or ru
 - Admin: `admin@example.com` / `Admin@123`
 - Student: `student@example.com` / `Student@123`
 
-Change demo passwords and configure a strong `SESSION_SECRET` before any public deployment. These are demonstration credentials, not production credentials.
+The login screen offers separate Student Login and Admin Login choices. The credentials above are for local demonstration only. Before public deployment, set a strong `SESSION_SECRET`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` as environment variables before the first start. Seed accounts are created only when `data/db.json` does not already exist.
 
 ## Quick test checklist
 
@@ -69,7 +70,7 @@ cloud-exam-system/
 
 ## Important implementation note
 
-This starter version stores application records in `data/db.json` so it can be run locally without setting up a database server. That makes local demonstration simple, but JSON-file storage is **not appropriate for a multi-instance production deployment** and may be ephemeral on cloud hosts. Before presenting this as a fully cloud-deployed system, configure a managed database such as PostgreSQL, set a strong session secret, use HTTPS, and test the deployment. The app is not deployed by creating this ZIP; deployment is a separate step.
+This learning version stores users, exams, and results in `data/db.json`. It is suitable for local testing or a temporary single-instance demo, but it is **not production storage**: cloud hosts may erase local files during redeploys, and multiple instances cannot safely share this JSON file. For a reliable public deployment, move records to a managed database such as PostgreSQL and use a persistent session store. The app reads the host-provided `PORT` and requires `SESSION_SECRET` in production.
 
 ## GitHub upload
 
