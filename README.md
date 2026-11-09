@@ -37,7 +37,7 @@ If PowerShell blocks `npm.ps1`, use Command Prompt as the VS Code terminal or ru
 
 ## Demo accounts
 
-- Admin: `admin@example.com` / `Admin@123`
+- Admin: `admin@example.com` / `Admin@1234`
 - Student: `student@example.com` / `Student@1234`
 
 The login screen offers separate Student Login and Admin Login choices. The credentials above are for local demonstration only. Before public deployment, set a strong `SESSION_SECRET`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` as environment variables before the first start. Seed accounts are created only when `data/db.json` does not already exist.
